@@ -31,7 +31,61 @@ app.post("/boxes", async (req, res) => {
   await redisClient.json.arrAppend("boxes", "$", newBox); //save the box to redis
   res.json(newBox); //send the box back to the user
 }); //add a box to the list of boxes
+app.post("/boxes", async (req, res) => {
+  const newBox = req.body; //get the box from the request body
+  newBox.id = parseInt(await redisClient.json.arrLen("boxes", "$")) + 1; //add an id to the box, the user should not provide an id
+  await redisClient.json.arrAppend("boxes", "$", newBox); //save the box to redis
+  res.json(newBox); //send the box back to the user
+}); //add a box to the list of boxes
 
+const orderSchema = {
+  type: "object",
+  properties: {
+    customerName: { type: "string" },
+    items: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          productId: { type: "number" },
+          quantity: { type: "number" },
+        },
+        required: ["productId", "quantity"],
+      },
+    },
+  },
+  required: ["customerName", "items"],
+};
+
+const Ajv = require("ajv");
+const ajv = new Ajv();
+
+app.post("/orders", async (req, res) => {
+  const validate = ajv.compile(orderSchema);
+  const valid = validate(req.body);
+
+  if (!valid) {
+    res.status(400).json(validate.errors);
+  } else {
+    const newOrder = req.body;
+    // Check if the 'orders' key exists
+    const ordersExist = await redisClient.exists("orders");
+    if (ordersExist.arrLen == null) {
+      // If it doesn't exist, set the id to 1
+      newOrder.id = 1;
+    } else {
+      // If it does exist, set the id to the length of the array + 1
+      newOrder.id = parseInt(await redisClient.json.arrLen("orders", "$")) + 1;
+    }
+    await redisClient.json.arrAppend("orders", "$", newOrder);
+    res.json(newOrder);
+  }
+});
+
+app.get("/orders", async (req, res) => {
+  let orders = await redisClient.json.get("orders", { path: "$" });
+  res.json(orders[0]);
+});
 //make a list of boxes
 // const boxes = [
 //   { name: "Box1", boxid: 1 },
