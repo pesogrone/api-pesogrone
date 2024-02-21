@@ -2,6 +2,7 @@ const express = require("express"); // express makes APIs - connect frotend to d
 const Redis = require("redis"); //redis is a database, import the Redis class from the redis library
 const bodyParser = require("body-parser"); //body-parser is a library that allows us to read the body of a request
 const cors = require("cors"); //cors is a library that allows us to make requests from the frontend to the backend
+const { addOrder, getOrder } = require("./services/orderservice.js"); //import the addOrder function from the orderservice.js file
 
 const options = {
   origin: "http://localhost:3000", //allow requests from the frontend
@@ -26,35 +27,36 @@ const Ajv = require("ajv");
 const ajv = new Ajv();
 
 app.post("/orders", async (req, res) => {
-  const validate = ajv.compile(Schema);
-  const valid = validate(req.body);
-
-  if (!valid) {
-    res.status(400).json(validate.errors);
-  } else {
-    const newOrder = req.body;
-    newOrder.customerId = 1;
-    // Check if the 'orders' key exists
-    const ordersExist = await redisClient.exists("orders");
-    if (ordersExist.arrLen - 1 == null) {
-      // If it doesn't exist, set the id to 1
-      newOrder.orderid = 1;
-    } else {
-      // If it does exist, set the id to the length of the array + 1
-      newOrder.orderid =
-        parseInt(await redisClient.json.arrLen("orders", "$")) + 1;
+  let order = req.body;
+  // order details
+  let responseStatus = order.productQuantity ? 200 : 400;
+  if (responseStatus === 200) {
+    try {
+      // addOrder function to handle order creation in the database
+      await addOrder({ redisClient, order });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Internal Server Error");
+      return;
     }
-    await redisClient.json.arrAppend("orders", "$", newOrder);
-    res.json(newOrder);
+  } else {
+    res.status(responseStatus);
+    res.send(
+      `Missing one of the following fields: ${exactMatchOrderFields()} ${partiallyMatchOrderFields()}`
+    );
   }
+  res.status(responseStatus).send();
 });
 
-app.get("/orders", async (req, res) => {
-  let orders = await redisClient.json.get("orders", { path: "$" });
-  orders.forEach((order) => {
-    console.log(order.customerId); // This will log the customerId of each order
-  });
-  res.json(orders[0]);
+app.get("/orders:orderId", async (req, res) => {
+  // get all orders from the database
+  const orderId = req.params.orderId;
+  let order = await getOrder({ redisClient, orderId });
+  if (order === null) {
+    res.status(404).send("Order not found");
+  } else {
+    res.json(order);
+  }
 });
 //make a list of boxes
 // const boxes = [
