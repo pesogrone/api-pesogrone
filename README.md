@@ -10,7 +10,7 @@ To start using our API, follow these steps:
 2. Install the required dependencies using `npm install`.
 3. Start the server using `npm start`.
 
-## Endpoints
+##Some Endpoints explanation
 
 ### Products
 
