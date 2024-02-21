@@ -29,7 +29,12 @@ const ajv = new Ajv();
 app.post("/orders", async (req, res) => {
   let order = req.body;
   // order details
-  let responseStatus = order.productQuantity ? 200 : 400;
+  let responseStatus = order.productQuantity
+    ? 200
+    : 400 && order.ShippingAddress
+    ? 200
+    : 400;
+
   if (responseStatus === 200) {
     try {
       // addOrder function to handle order creation in the database
@@ -48,8 +53,8 @@ app.post("/orders", async (req, res) => {
   res.status(responseStatus).send();
 });
 
-app.get("/orders:orderId", async (req, res) => {
-  // get all orders from the database
+app.get("/orders/:orderId", async (req, res) => {
+  // get the order from the database
   const orderId = req.params.orderId;
   let order = await getOrder({ redisClient, orderId });
   if (order === null) {
