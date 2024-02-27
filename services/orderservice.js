@@ -7,11 +7,11 @@ const addOrder = async ({ redisClient, order }) => {
   const customerKey = `customer:${order.customerId}`;
   //const existingCustomer = await redisClient.json.get(customerKey);
   if (existingCustomer !== null) {
-    const orderKey = `order:${order.customerId}-${Date.now()}`;
+    const orderKey = `${order.customerId}-${Date.now()}`;
     order.orderId = orderKey;
 
     // Create the order data in Redis
-    await redisClient.json.set(orderKey, "$", order);
+    await redisClient.json.set(`order:${orderKey}`, "$", order);
   } else {
     throw new Error(`Customer ${customerKey} does not exist`);
   }

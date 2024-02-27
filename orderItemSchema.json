@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "properties": {
+    "orderId": { "type": "string" },
+    "productId": { "type": "string" },
+    "quantity": { "type": "integer" },
+    "customerId":{"type": "string"}
+  },
+  "required": [ "customerId", "orderId", "productId", "quantity" ]
+}
