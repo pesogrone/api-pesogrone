@@ -1,6 +1,6 @@
 const addOrder = async ({ redisClient, order }) => {
   //Temporary hardcoding of customer ID
-  order.customerId = 3852656789;
+  order.customerId = "3852656789";
   //use the const to pull the customer ID from the order object
 
   const existingCustomer = order.customerId;

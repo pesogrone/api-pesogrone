@@ -4,7 +4,7 @@
     "orderId": { "type": "string" },
     "productId": { "type": "string" },
     "quantity": { "type": "integer" },
-    "customerId":{"type": "string"}
+    "customerId":{"type": "String"}
   },
   "required": [ "customerId", "orderId", "productId", "quantity" ]
 }
