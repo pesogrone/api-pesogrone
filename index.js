@@ -38,11 +38,54 @@ app.post("/orders", async (req, res) => {
     try {
       // addOrder function to handle order creation in the database
       await addOrder({ redisClient, order });
+      // Create an order item with the same orderId
+      // const orderItems = {
+      //   orderId: "65465",
+      //   productId: "12345",
+      //   quantity: order.productQuantity,
+      //   customerId: order.customerId,
+      //   // Add other order item properties here
+      // };
+      // // Validate the order item
+      // const validate = ajv.compile(Schema);
+      // const valid = validate(orderItems);
+      // if (!valid) {
+      //   console.log("Invalid order item data:", validate.errors);
+      //   return res.status(400).json({ error: "Invalid order item data" });
+      // }
+      // // Add the order item to the database
+      // await addOrderItem({ redisClient, orderItem: orderItems });
+      // const orderItemId = await addOrderItem({
+      //   redisClient,
+      //   orderItem: orderItems,
+      // });
+      // res
+      //   .status(200)
+      //   .json({ message: "Order created successfully", order: order });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Internal Server Error");
+      return;
+    }
+    try {
+      // Create an order item with the same orderId
+      const orderItems = {
+        orderId: order.orderId,
+        productId: "12345",
+        quantity: order.productQuantity,
+        customerId: order.customerId,
+        // Add other order item properties here
+      };
+      // Add the order item to the database
+      const orderItemId = await addOrderItem({
+        redisClient,
+        orderItem: orderItems,
+      });
       res
         .status(200)
         .json({ message: "Order created successfully", order: order });
     } catch (error) {
-      console.error(error);
+      console.error("Error creating order item:", error);
       res.status(500).send("Internal Server Error");
       return;
     }
@@ -54,7 +97,6 @@ app.post("/orders", async (req, res) => {
       } ${order.ShippingAddress ? "" : "ShippingAddress"}`
     );
   }
-  res.status(responseStatus).send();
 });
 
 //GET /orders/:orderId
