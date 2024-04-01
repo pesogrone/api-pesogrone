@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ApiFunction
+      Handler: index.ordersHandler
+      Runtime: nodejs20.x
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /orders
+            Method: post
+    Metadata:
+      SamResourceId: ApiFunction
+  OrderItemsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: OrderItemsFunction
+      Handler: index.orderItemsHandler
+      Runtime: nodejs20.x
+      Events:
+        OrderItemsApiEvent:
+          Type: Api
+          Properties:
+            Path: /orderItems
+            Method: post
+    Metadata:
+      SamResourceId: OrderItemsFunction
+  OrdersByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: OrdersByIdFunction
+      Handler: index.ordersByIdHandler
+      Runtime: nodejs20.x
+      Events:
+        OrdersByIdApiEvent:
+          Type: Api
+          Properties:
+            Path: /orders/{orderId}
+            Method: get
+    Metadata:
+      SamResourceId: OrdersByIdFunction
+  BoxesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: BoxesFunction
+      Handler: index.boxesHandler
+      Runtime: nodejs20.x
+      Events:
+        BoxesApiEvent:
+          Type: Api
+          Properties:
+            Path: /boxes
+            Method: get
+    Metadata:
+      SamResourceId: BoxesFunction
+  MyElasticacheSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: Subnet group for ElastiCache
+      SubnetIds:
+      - subnet-02c217f126c0ce1d5
+  MyElasticacheRedis:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      CacheNodeType: cache.t2.micro
+      Engine: redis
+      NumCacheNodes: 1
+      Port: 6379
+      VpcSecurityGroupIds:
+      - Fn::GetAtt:
+        - MySecurityGroup
+        - GroupId
+      CacheSubnetGroupName:
+        Ref: MyElasticacheSubnetGroup
+  MySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Lambda function
+      VpcId: vpc-066e6a637e37f2752
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 6379
+        ToPort: 6379
+        CidrIp: '0.0.0.0/0'
