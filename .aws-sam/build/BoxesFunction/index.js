@@ -8,6 +8,7 @@ const fs = require("fs"); // import the file system library
 const Schema = JSON.parse(fs.readFileSync("./orderItemSchema.json", "utf8")); // read the orderItemSchema.json file and parse it as JSON
 const Ajv = require("ajv"); // import the ajv library
 const ajv = new Ajv(); // create an ajv object to validate JSON
+const awsServerlessExpressMiddleware = require("aws-serverless-express/middleware");
 
 const options = {
   origin: "http://localhost:3000", //allow requests from the frontend
@@ -20,6 +21,7 @@ const redisClient = Redis.createClient({
 const app = express(); // create an express application
 app.use(bodyParser.json()); //use the body-parser library to read JSON from the request body
 app.use(cors(options)); //use the cors library to allow requests from the frontend
+app.use(awsServerlessExpressMiddleware.eventContext());
 const port = 3001; // port to run the server on
 app.listen(port, () => {
   redisClient.connect(); //connect to redis
@@ -44,28 +46,10 @@ app.post("/orders", async (req, res) => {
       res.status(500).send("Internal Server Error");
       return;
     }
-    // try {
-    //   // Create an order item with the same orderId
-    //   const orderItems = {
-    //     orderId: order.orderId,
-    //     productId: "12345",
-    //     quantity: order.productQuantity,
-    //     customerId: order.customerId,
-    //     // Add other order item properties here
-    //   };
-    //   // Add the order item to the database
-    //   const orderItemId = await addOrderItem({
-    //     redisClient,
-    //     orderItem: orderItems,
-    //   });
+
     res
       .status(200)
       .json({ message: "Order created successfully", order: order });
-    // } catch (error) {
-    //   console.error("Error creating order item:", error);
-    //   res.status(500).send("Internal Server Error");
-    //   return;
-    // }
   } else {
     res.status(responseStatus);
     res.send(
@@ -127,6 +111,8 @@ app.get("/orderItems/:orderItemId", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+// Export your express server
+module.exports = app;
 //make a list of boxes
 // const boxes = [
 //   { name: "Box1", boxid: 1 },
@@ -156,3 +142,31 @@ app.get("/orderItems/:orderItemId", async (req, res) => {
 //   await redisClient.json.arrAppend("boxes", "$", newBox); //save the box to redis
 //   res.json(newBox); //send the box back to the user
 // }); //add a box to the list of boxes
+//
+///
+//
+//
+
+// try {
+//   // Create an order item with the same orderId
+//   const orderItems = {
+//     orderId: order.orderId,
+//     productId: "12345",
+//     quantity: order.productQuantity,
+//     customerId: order.customerId,
+//     // Add other order item properties here
+//   };
+//   // Add the order item to the database
+//   const orderItemId = await addOrderItem({
+//     redisClient,
+//     orderItem: orderItems,
+//   });
+//
+//
+//
+//
+// } catch (error) {
+//   console.error("Error creating order item:", error);
+//   res.status(500).send("Internal Server Error");
+//   return;
+// }

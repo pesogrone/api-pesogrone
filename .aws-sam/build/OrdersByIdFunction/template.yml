@@ -8,6 +8,9 @@ Resources:
       CodeUri: .
       Handler: index.ordersHandler
       Runtime: nodejs20.x
+      Environment:
+        Variables:
+          REDIS_ENDPOINT: !GetAtt MyElasticacheRedis.RedisEndpoint.Address
       Events:
         ApiEvent:
           Type: Api
