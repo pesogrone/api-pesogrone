@@ -30,21 +30,22 @@ app.listen(port, () => {
 
 //Order
 exports.ordersHandler = async (event, context) => {
-  // Create a serverless express server
-  const server = awsServerlessExpress.createServer(app);
+  // Parse the incoming event body
+  const req = {
+    body: JSON.parse(event.body),
+  };
 
-  // Proxy the event to the server
-  const response = await awsServerlessExpress.proxy(
-    server,
-    event,
-    context,
-    "PROMISE"
-  ).promise;
+  const res = {
+    status: function (code) {
+      this.statusCode = code;
+      return this;
+    },
+    json: function (obj) {
+      this.body = JSON.stringify(obj);
+      return this;
+    },
+  };
 
-  return response;
-};
-
-app.post("/orders", async (req, res) => {
   let order = req.body; //get the order from the request body
 
   // order details, include product quantity and shipping address
@@ -57,8 +58,8 @@ app.post("/orders", async (req, res) => {
       await addOrder({ redisClient, order });
       const orderId = order.orderId;
     } catch (error) {
-      console.error(error);
-      res.status(500).send("Internal Server Error");
+      console.error(error.stack);
+      res.status(500).json({ error: "Internal Server Error" });
       return;
     }
 
@@ -66,14 +67,13 @@ app.post("/orders", async (req, res) => {
       .status(200)
       .json({ message: "Order created successfully", order: order });
   } else {
-    res.status(responseStatus);
-    res.send(
-      `Missing one of the following fields: ${
+    res.status(responseStatus).json({
+      error: `Missing one of the following fields: ${
         order.productQuantity ? "" : "productQuantity"
-      } ${order.ShippingAddress ? "" : "ShippingAddress"}`
-    );
+      } ${order.ShippingAddress ? "" : "ShippingAddress"}`,
+    });
   }
-});
+};
 
 //GET /orders/:orderId
 app.get("/orders/:orderId", async (req, res) => {
@@ -85,10 +85,11 @@ app.get("/orders/:orderId", async (req, res) => {
     }
     res.json(order);
   } catch (error) {
-    console.error("Error getting order:", error);
+    console.error("Error getting order:", error.stack);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 //ORDER ITEMS
 app.post("/orderItems", async (req, res) => {
   try {
@@ -111,7 +112,7 @@ app.post("/orderItems", async (req, res) => {
       .status(201)
       .json({ orderItemId, message: "Order item added successfully" });
   } catch (error) {
-    console.error("Error adding order item:", error);
+    console.error("Error adding order item:", error.stack);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -122,10 +123,11 @@ app.get("/orderItems/:orderItemId", async (req, res) => {
     const orderItem = await getOrderItem({ redisClient, orderItemId });
     res.json(orderItem);
   } catch (error) {
-    console.error("Error getting order item:", error);
+    console.error("Error getting order item:", error.stack);
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 // Export your express server
 module.exports = app;
 //make a list of boxes
