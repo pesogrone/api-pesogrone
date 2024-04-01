@@ -29,6 +29,11 @@ app.listen(port, () => {
 }); //listen for web requests form the frontend and don't stop () => console.log('listening at 3000')); // listen for requests on port 3000
 
 //Order
+exports.handler = async (event, context) => {
+  const response = await awsServerlessExpress.proxy(server, event, context);
+  return response;
+};
+
 app.post("/orders", async (req, res) => {
   let order = req.body; //get the order from the request body
 
