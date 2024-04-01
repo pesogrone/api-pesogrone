@@ -15,7 +15,7 @@ const options = {
 //import redis from 'redis';//import redis library
 
 const redisClient = Redis.createClient({
-  url: `redis:${process.env.REDIS_HOST}:6379`, //connect to redis on port 6379
+  url: `redis://${process.env.REDIS_HOST}:6379`, // connect to Redis on port 6379
 }); //create a redis client
 const app = express(); // create an express application
 app.use(bodyParser.json()); //use the body-parser library to read JSON from the request body
