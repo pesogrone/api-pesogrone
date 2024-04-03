@@ -17,7 +17,7 @@ Resources:
           Properties:
             Path: /orders
             Method: post
-    Role: !GetAtt YuriOrderItemsFunctionRole.Arn
+    Role: !GetAtt RonaldOrderItemsFunctionRole.Arn
 
   OrderItemsFunction:
     Type: AWS::Serverless::Function
@@ -34,7 +34,7 @@ Resources:
           Properties:
             Path: /orderItems
             Method: post
-    Role: !GetAtt YuriOrderItemsFunctionRole.Arn
+    Role: !GetAtt RonaldOrderItemsFunctionRole.Arn
 
   OrdersByIdFunction:
     Type: AWS::Serverless::Function
@@ -51,7 +51,7 @@ Resources:
           Properties:
             Path: /orders/{orderId}
             Method: get
-    Role: !GetAtt YuriOrderItemsFunctionRole.Arn
+    Role: !GetAtt RonaldOrderItemsFunctionRole.Arn
 
   BoxesFunction:
     Type: AWS::Serverless::Function
@@ -68,7 +68,7 @@ Resources:
           Properties:
             Path: /boxes
             Method: get
-    Role: !GetAtt YuriOrderItemsFunctionRole.Arn
+    Role: !GetAtt RonaldOrderItemsFunctionRole.Arn
 
   ShowAllOrdersFunction:
     Type: AWS::Serverless::Function
@@ -85,13 +85,13 @@ Resources:
           Properties:
             Path: /orders
             Method: get
-    Role: !GetAtt YuriOrderItemsFunctionRole.Arn
+    Role: !GetAtt RonaldOrderItemsFunctionRole.Arn
 
   # Add IAM roles with required tag permissions
-  YuriOrderItemsFunctionRole:
+  RonaldOrderItemsFunctionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: YuriOrderItemsFunctionRole
+      RoleName: RonaldOrderItemsFunctionRole
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:

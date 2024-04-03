@@ -21,7 +21,7 @@ Resources:
             Method: post
     Role:
       Fn::GetAtt:
-      - YuriOrderItemsFunctionRole
+      - RonaldOrderItemsFunctionRole
       - Arn
     Metadata:
       SamResourceId: ApiFunction
@@ -45,7 +45,7 @@ Resources:
             Method: post
     Role:
       Fn::GetAtt:
-      - YuriOrderItemsFunctionRole
+      - RonaldOrderItemsFunctionRole
       - Arn
     Metadata:
       SamResourceId: OrderItemsFunction
@@ -69,7 +69,7 @@ Resources:
             Method: get
     Role:
       Fn::GetAtt:
-      - YuriOrderItemsFunctionRole
+      - RonaldOrderItemsFunctionRole
       - Arn
     Metadata:
       SamResourceId: OrdersByIdFunction
@@ -93,7 +93,7 @@ Resources:
             Method: get
     Role:
       Fn::GetAtt:
-      - YuriOrderItemsFunctionRole
+      - RonaldOrderItemsFunctionRole
       - Arn
     Metadata:
       SamResourceId: BoxesFunction
@@ -117,14 +117,14 @@ Resources:
             Method: get
     Role:
       Fn::GetAtt:
-      - YuriOrderItemsFunctionRole
+      - RonaldOrderItemsFunctionRole
       - Arn
     Metadata:
       SamResourceId: ShowAllOrdersFunction
-  YuriOrderItemsFunctionRole:
+  RonaldOrderItemsFunctionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: YuriOrderItemsFunctionRole
+      RoleName: RonaldOrderItemsFunctionRole
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
