@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  MyLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs20.x
+      CodeUri: MyLambdaFunction
+      MemorySize: 128
+      Timeout: 30
+      VpcConfig:
+        SubnetIds:
+        - Ref: MySubnet
+        SecurityGroupIds:
+        - Ref: MyLambdaSecurityGroup
+      Environment:
+        Variables:
+          REDIS_HOST:
+            Fn::GetAtt:
+            - MyElasticacheRedis
+            - RedisEndpointAddress
+      Events:
+        MyApi:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: any
+    Metadata:
+      SamResourceId: MyLambdaFunction
+  MyLambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Lambda function
+      VpcId:
+        Ref: MyVPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 6379
+        ToPort: 6379
+        SourceSecurityGroupId:
+          Ref: MySecurityGroup
+  MyVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+  MySubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: MyVPC
+      CidrBlock: 10.0.0.0/24
+  MyElasticacheSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: Subnet group for ElastiCache
+      SubnetIds:
+      - Ref: MySubnet
+  MyElasticacheRedis:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      CacheNodeType: cache.t2.micro
+      Engine: redis
+      NumCacheNodes: 1
+      Port: 6379
+      VpcSecurityGroupIds:
+      - Ref: MySecurityGroup
+      CacheSubnetGroupName:
+        Ref: MyElasticacheSubnetGroup
+  MySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for ElastiCache
+      VpcId:
+        Ref: MyVPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 6379
+        ToPort: 6379
+        SourceSecurityGroupId:
+          Ref: MyLambdaSecurityGroup
