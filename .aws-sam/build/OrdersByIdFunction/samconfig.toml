@@ -1,0 +1,10 @@
+version = 0.1
+[default.deploy.parameters]
+stack_name = "ronald-orders"
+resolve_s3 = true
+s3_prefix = "ronald-orders"
+region = "us-east-1"
+profile = "rmbgkpo"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+image_repositories = []

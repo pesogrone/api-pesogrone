@@ -1,45 +1,142 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Resources:
-  MyLambdaFunction:
+  ApiFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: index.handler
+      CodeUri: ApiFunction
+      Handler: index.ordersHandler
       Runtime: nodejs20.x
-      CodeUri: MyLambdaFunction
-      MemorySize: 128
-      Timeout: 30
-      VpcConfig:
-        SubnetIds:
-        - Ref: MySubnet
-        SecurityGroupIds:
-        - Ref: MyLambdaSecurityGroup
       Environment:
         Variables:
           REDIS_HOST:
             Fn::GetAtt:
             - MyElasticacheRedis
-            - RedisEndpointAddress
+            - RedisEndpoint.Address
       Events:
-        MyApi:
+        ApiEvent:
           Type: Api
           Properties:
-            Path: /{proxy+}
-            Method: any
+            Path: /orders
+            Method: post
+    Role:
+      Fn::GetAtt:
+      - YuriOrderItemsFunctionRole
+      - Arn
     Metadata:
-      SamResourceId: MyLambdaFunction
-  MyLambdaSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
+      SamResourceId: ApiFunction
+  OrderItemsFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      GroupDescription: Security group for Lambda function
-      VpcId:
-        Ref: MyVPC
-      SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: 6379
-        ToPort: 6379
-        SourceSecurityGroupId:
-          Ref: MySecurityGroup
+      CodeUri: OrderItemsFunction
+      Handler: index.orderItemsHandler
+      Runtime: nodejs20.x
+      Environment:
+        Variables:
+          REDIS_HOST:
+            Fn::GetAtt:
+            - MyElasticacheRedis
+            - RedisEndpoint.Address
+      Events:
+        OrderItemsApiEvent:
+          Type: Api
+          Properties:
+            Path: /orderItems
+            Method: post
+    Role:
+      Fn::GetAtt:
+      - YuriOrderItemsFunctionRole
+      - Arn
+    Metadata:
+      SamResourceId: OrderItemsFunction
+  OrdersByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: OrdersByIdFunction
+      Handler: index.ordersByIdHandler
+      Runtime: nodejs20.x
+      Environment:
+        Variables:
+          REDIS_HOST:
+            Fn::GetAtt:
+            - MyElasticacheRedis
+            - RedisEndpoint.Address
+      Events:
+        OrdersByIdApiEvent:
+          Type: Api
+          Properties:
+            Path: /orders/{orderId}
+            Method: get
+    Role:
+      Fn::GetAtt:
+      - YuriOrderItemsFunctionRole
+      - Arn
+    Metadata:
+      SamResourceId: OrdersByIdFunction
+  BoxesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: BoxesFunction
+      Handler: index.boxesHandler
+      Runtime: nodejs20.x
+      Environment:
+        Variables:
+          REDIS_HOST:
+            Fn::GetAtt:
+            - MyElasticacheRedis
+            - RedisEndpoint.Address
+      Events:
+        BoxesApiEvent:
+          Type: Api
+          Properties:
+            Path: /boxes
+            Method: get
+    Role:
+      Fn::GetAtt:
+      - YuriOrderItemsFunctionRole
+      - Arn
+    Metadata:
+      SamResourceId: BoxesFunction
+  ShowAllOrdersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ShowAllOrdersFunction
+      Handler: index.showAllOrders
+      Runtime: nodejs20.x
+      Environment:
+        Variables:
+          REDIS_HOST:
+            Fn::GetAtt:
+            - MyElasticacheRedis
+            - RedisEndpoint.Address
+      Events:
+        ShowOrdersApiEvent:
+          Type: Api
+          Properties:
+            Path: /orders
+            Method: get
+    Role:
+      Fn::GetAtt:
+      - YuriOrderItemsFunctionRole
+      - Arn
+    Metadata:
+      SamResourceId: ShowAllOrdersFunction
+  YuriOrderItemsFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: YuriOrderItemsFunctionRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Tags:
+      - Key: MyTag
+        Value: MyValue
   MyVPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -55,7 +152,7 @@ Resources:
     Properties:
       Description: Subnet group for ElastiCache
       SubnetIds:
-      - Ref: MySubnet
+      - subnet-02c217f126c0ce1d5
   MyElasticacheRedis:
     Type: AWS::ElastiCache::CacheCluster
     Properties:
@@ -64,18 +161,18 @@ Resources:
       NumCacheNodes: 1
       Port: 6379
       VpcSecurityGroupIds:
-      - Ref: MySecurityGroup
+      - Fn::GetAtt:
+        - MySecurityGroup
+        - GroupId
       CacheSubnetGroupName:
         Ref: MyElasticacheSubnetGroup
   MySecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security group for ElastiCache
-      VpcId:
-        Ref: MyVPC
+      GroupDescription: Security group for Lambda function
+      VpcId: vpc-066e6a637e37f2752
       SecurityGroupIngress:
       - IpProtocol: tcp
         FromPort: 6379
         ToPort: 6379
-        SourceSecurityGroupId:
-          Ref: MyLambdaSecurityGroup
+        CidrIp: '0.0.0.0/0'

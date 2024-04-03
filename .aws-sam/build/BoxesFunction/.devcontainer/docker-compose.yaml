@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  devcontainer:
+    image: mcr.microsoft.com/devcontainers/javascript-node:1-20-bullseye
+    volumes:
+      - ../..:/workspaces:cached
+    command: sleep infinity
+
+  redis:
+    image: redis/redis-stack-server:latest
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"      
+  # redis-insight:
+  #   image: redislabs/redisinsight
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8080:8001"    
+volumes:
+  redis-data:

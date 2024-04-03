@@ -1,0 +1,42 @@
+{
+    "name": "Node.js",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "waitFor": "onCreateCommand",
+    "updateContentCommand": "npm install",
+    "onCreateCommand": "sh .devcontainer/on-create.sh",
+    "postCreateCommand": "",
+    "postAttachCommand": {
+      "server": "npm run dev"
+    },
+    "forwardPorts": [
+      3000,8080
+    ],
+    "portsAttributes": {
+      "3000": {
+        "label": "Application",
+        "onAutoForward": "openPreview"
+      }
+    },
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "editorconfig.editorconfig",
+          "dbaeumer.vscode-eslint",
+          "ms-vsliveshare.vsliveshare",
+          "esbenp.prettier-vscode",
+          "bradlc.vscode-tailwindcss",
+          "github.copilot",
+          "github.copilot-chat",
+          "csstools.postcss",
+          "firsttris.vscode-jest-runner",
+          "GitHub.vscode-github-actions",
+          "ortoni.ortoni",
+          "ms-azuretools.vscode-docker",
+          "ZixuanChen.vitest-explorer"
+        ]
+      }
+    }
+  }
+  
