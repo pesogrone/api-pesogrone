@@ -5,14 +5,16 @@ const fs = require("fs");
 const Schema = JSON.parse(fs.readFileSync("./orderItemSchema.json"));
 const Ajv = require("ajv");
 const ajv = new Ajv();
-
-const redisClient = Redis.createClient({
-  // url:`redis://$(process.env.REDIS_HOST || localhost):$(process.env.REDIS_PORT || 6379)`
-  url: `redis://${process.env.REDIS_HOST}:6379`,
-});
-
+let redisClient;
+const connectRedisClient = () => {
+  if (!redisClient) {
+    redisClient = Redis.createClient({
+      url: `redis://${process.env.REDIS_HOST}:6379}`,
+    });
+  }
+};
 exports.boxesHandler = async (event, context) => {
-  redisClient.connect().catch(console.error);
+  connectRedisClient();
   try {
     const boxes = await redisClient.json.get("boxes", { path: "$" });
     return {
@@ -29,7 +31,7 @@ exports.boxesHandler = async (event, context) => {
 };
 
 exports.ordersHandler = async (event, context) => {
-  redisClient.connect().catch(console.error);
+  connectRedisClient();
 
   try {
     if (
@@ -134,7 +136,7 @@ exports.ordersHandler = async (event, context) => {
 // };
 
 exports.orderItemsHandler = async (event, context) => {
-  redisClient.connect().catch(console.error);
+  connectRedisClient();
   try {
     const validate = ajv.compile(Schema);
     const valid = event.body;
@@ -171,7 +173,7 @@ exports.ordersByIdHandler = async (event, context) => {
     statusCode: 200,
     body: JSON.stringify({ message: "Hello from ordersHandler", event }),
   };
-  redisClient.connect().catch(console.error);
+  connectRedisClient();
   try {
     const orderId = event.pathParameters.orderId;
     const order = await getOrder({ redisClient, orderId });
