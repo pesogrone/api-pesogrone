@@ -1,8 +1,8 @@
 version = 0.1
 [default.deploy.parameters]
-stack_name = "ronald-orders"
+stack_name = "ronald"
 resolve_s3 = true
-s3_prefix = "ronald-orders"
+s3_prefix = "ronald"
 region = "us-east-1"
 profile = "rmbgkpo"
 confirm_changeset = true
